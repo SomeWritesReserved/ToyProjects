@@ -14,15 +14,22 @@ namespace HL1BspReader
 		#region Fields
 
 		private BspViewerForm bspViewerForm;
-
+		
 		private readonly float cameraFastSpeed = 10.0f;
 		private readonly float cameraSlowSpeed = 4.0f;
 		private readonly float mouseLookScale = 0.17f;
 
+		private KeyboardState currentKeyboardState;
+		private KeyboardState previousKeyboardState;
+		private MouseState currentMouseState;
+		private MouseState previousMouseState;
+		private Point mouseDownPoint;
+		private bool isDragging;
 		private Vector3 cameraPosition;
 		private Vector3 cameraRotation;
-		private Matrix cameraProjection;
 		private Matrix cameraView;
+
+		private BasicEffect basicEffect;
 
 		#endregion Fields
 
@@ -53,21 +60,37 @@ namespace HL1BspReader
 			this.bspViewerForm = new BspViewerForm();
 			this.bspViewerForm.DockGameWindow(this);
 			this.bspViewerForm.Show();
+
+			this.basicEffect = new BasicEffect(this.GraphicsDevice);
+			this.basicEffect.LightingEnabled = true;
+			this.basicEffect.TextureEnabled = false;
+			this.basicEffect.EnableDefaultLighting();
 		}
 
 		protected override void Update(GameTime gameTime)
 		{
-			KeyboardState keyboardState = Keyboard.GetState();
-			MouseState mouseState = Mouse.GetState();
+			this.currentKeyboardState = Keyboard.GetState();
+			this.currentMouseState = Mouse.GetState();
 
-			if (mouseState.RightButton == ButtonState.Pressed)
+			if (this.currentMouseState.RightButton == ButtonState.Pressed && this.previousMouseState.RightButton == ButtonState.Released)
 			{
-				this.updateCameraLook(mouseState);
-				this.updateMovement(keyboardState, mouseState);
+				this.isDragging = true;
+				this.mouseDownPoint = new Point(this.currentMouseState.X, this.currentMouseState.Y);
+			}
+			else if (this.currentMouseState.RightButton == ButtonState.Released)
+			{
+				this.isDragging = false;
+			}
+			
+			if (this.isDragging)
+			{
+				this.updateCameraLook();
+				this.updateMovement();
 				this.updateView();
 			}
 
-			this.bspViewerForm.Text = this.cameraPosition.ToString();
+			this.previousKeyboardState = this.currentKeyboardState;
+			this.previousMouseState = this.currentMouseState;
 
 			base.Update(gameTime);
 		}
@@ -75,19 +98,22 @@ namespace HL1BspReader
 		protected override void Draw(GameTime gameTime)
 		{
 			this.GraphicsDeviceManager.GraphicsDevice.Clear(Color.AliceBlue);
+			
+			this.basicEffect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(90.0f), this.GraphicsDevice.Viewport.AspectRatio, 0.1f, 1000.0f);
+			this.basicEffect.View = this.cameraView;
+			this.basicEffect.World = Matrix.Identity;
+
+			ShapeRenderHelper.RenderBox(this.GraphicsDevice, this.basicEffect, Vector3.Zero, new Vector3(16, 36, 16), Quaternion.Identity);
 
 			base.Draw(gameTime);
 		}
 
-		private void updateCameraLook(MouseState mouseState)
+		private void updateCameraLook()
 		{
-			int midX = GraphicsDevice.Viewport.Width / 2;
-			int midY = GraphicsDevice.Viewport.Height / 2;
+			float deltaX = MathHelper.ToRadians((this.mouseDownPoint.X - this.currentMouseState.X) * this.mouseLookScale);
+			float deltaY = MathHelper.ToRadians((this.mouseDownPoint.Y - this.currentMouseState.Y) * this.mouseLookScale);
 
-			float deltaX = MathHelper.ToRadians((midX - mouseState.X) * this.mouseLookScale);
-			float deltaY = MathHelper.ToRadians(-(midY - mouseState.Y) * this.mouseLookScale);
-
-			Vector3 vectorRotation = this.cameraRotation + new Vector3(deltaX, deltaY, 0);
+			Vector3 vectorRotation = this.cameraRotation + new Vector3(deltaX, -deltaY, 0);
 			if (vectorRotation.Y > MathHelper.PiOver2 - 0.01f)
 			{
 				vectorRotation.Y = MathHelper.PiOver2 - 0.01f;
@@ -98,29 +124,28 @@ namespace HL1BspReader
 			}
 
 			this.cameraRotation = vectorRotation;
-			Mouse.SetPosition(midX, midY);
+			Mouse.SetPosition(this.mouseDownPoint.X, this.mouseDownPoint.Y);
 		}
 
-		private void updateMovement(KeyboardState keyboardState, MouseState mouseState)
+		private void updateMovement()
 		{
 			Quaternion rotation = Quaternion.CreateFromYawPitchRoll(this.cameraRotation.X, this.cameraRotation.Y, this.cameraRotation.Z);
-			float speed = (mouseState.RightButton == ButtonState.Pressed) ? this.cameraSlowSpeed : this.cameraFastSpeed;
 			Vector3 vectorMovement = Vector3.Zero;
 
-			if (keyboardState.IsKeyDown(Keys.W))
+			if (this.currentKeyboardState.IsKeyDown(Keys.W))
 			{
 				vectorMovement.Z = 1;
 			}
-			else if (keyboardState.IsKeyDown(Keys.S))
+			if (this.currentKeyboardState.IsKeyDown(Keys.S))
 			{
 				vectorMovement.Z = -1;
 			}
 
-			if (keyboardState.IsKeyDown(Keys.A))
+			if (this.currentKeyboardState.IsKeyDown(Keys.A))
 			{
 				vectorMovement.X = 1;
 			}
-			else if (keyboardState.IsKeyDown(Keys.D))
+			if (this.currentKeyboardState.IsKeyDown(Keys.D))
 			{
 				vectorMovement.X = -1;
 			}
@@ -128,8 +153,9 @@ namespace HL1BspReader
 			if (vectorMovement != Vector3.Zero)
 			{
 				vectorMovement.Normalize();
-				vectorMovement = Vector3.Transform(vectorMovement * speed, rotation);
-				this.cameraPosition = this.cameraPosition + vectorMovement;
+				float cameraSpeed = this.currentKeyboardState.IsKeyDown(Keys.LeftShift) ? this.cameraFastSpeed : this.cameraSlowSpeed;
+				vectorMovement = Vector3.Transform(vectorMovement * cameraSpeed, rotation);
+				this.cameraPosition += vectorMovement;
 			}
 		}
 
