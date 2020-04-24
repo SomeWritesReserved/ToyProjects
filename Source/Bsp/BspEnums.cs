@@ -19,7 +19,7 @@ namespace HL1BspReader
 		Lighting = 8,
 		Clipnodes = 9,
 		Leafs = 10,
-		MarkSurfaces = 11,
+		Marksurfaces = 11,
 		Edges = 12,
 		SurfaceEdges = 13,
 		Model = 14,

@@ -146,6 +146,23 @@ namespace HL1BspReader
 				if (reader.BaseStream.Position != reader.BaseStream.Length) { throw new InvalidDataException("Didn't read all"); }
 			}
 
+			List<BspSurfaceEdge> surfaceEdges = new List<BspSurfaceEdge>();
+			using (BinaryReader reader = new BinaryReader(new MemoryStream(lumps[LumpType.SurfaceEdges].Data)))
+			{
+				int surfaceEdgeIndex = 0;
+				while (reader.BaseStream.Position < reader.BaseStream.Length)
+				{
+					int edgeIndex = reader.ReadInt32();
+					surfaceEdges.Add(new BspSurfaceEdge()
+					{
+						SurfaceEdgeIndex = surfaceEdgeIndex++,
+						_EdgeIndex = edgeIndex,
+						Edge = edges[Math.Abs(edgeIndex)],
+					});
+				}
+				if (reader.BaseStream.Position != reader.BaseStream.Length) { throw new InvalidDataException("Didn't read all"); }
+			}
+
 			List<BspFace> faces = new List<BspFace>();
 			using (BinaryReader reader = new BinaryReader(new MemoryStream(lumps[LumpType.Faces].Data)))
 			{
@@ -162,8 +179,8 @@ namespace HL1BspReader
 
 						_Side = reader.ReadInt16(),
 
-						_FirstEdgeIndex = reader.ReadInt32(),
-						_NumberOfEdges = reader.ReadInt16(),
+						_FirstSurfaceEdgeIndex = reader.ReadInt32(),
+						_NumberOfSurfaceEdges = reader.ReadInt16(),
 
 						_TextureIndex = reader.ReadInt16(),
 						LightStyles = reader.ReadInt32(),
@@ -173,8 +190,20 @@ namespace HL1BspReader
 				if (reader.BaseStream.Position != reader.BaseStream.Length) { throw new InvalidDataException("Didn't read all"); }
 				foreach (BspFace face in faces)
 				{
-					face.Edges = edges.Skip(face._FirstEdgeIndex).Take(face._NumberOfEdges).ToArray();
+					face.Edges = surfaceEdges.Skip(face._FirstSurfaceEdgeIndex).Take(face._NumberOfSurfaceEdges)
+						.Select((surfaceEdge) => surfaceEdge.Edge)
+						.ToArray();
 				}
+			}
+
+			List<ushort> marksurfaces = new List<ushort>();
+			using (BinaryReader reader = new BinaryReader(new MemoryStream(lumps[LumpType.Marksurfaces].Data)))
+			{
+				while (reader.BaseStream.Position < reader.BaseStream.Length)
+				{
+					marksurfaces.Add(reader.ReadUInt16());
+				}
+				if (reader.BaseStream.Position != reader.BaseStream.Length) { throw new InvalidDataException("Didn't read all"); }
 			}
 
 			List<BspLeaf> leafs = new List<BspLeaf>();
@@ -197,13 +226,19 @@ namespace HL1BspReader
 						BoundsMaxY = reader.ReadInt16(),
 						BoundsMaxZ = reader.ReadInt16(),
 
-						_FirstMarkSufaceIndex = reader.ReadUInt16(),
-						_NumberOfMarkSufaces = reader.ReadUInt16(),
+						_FirstMarksurfaceIndex = reader.ReadUInt16(),
+						_NumberOfMarksurfaces = reader.ReadUInt16(),
 
 						AmbientLevel = reader.ReadInt32(),
 					});
 				}
 				if (reader.BaseStream.Position != reader.BaseStream.Length) { throw new InvalidDataException("Didn't read all"); }
+				foreach (BspLeaf leaf in leafs)
+				{
+					leaf.Faces = marksurfaces.Skip(leaf._FirstMarksurfaceIndex).Take(leaf._NumberOfMarksurfaces)
+						.Select((marksurface) => faces[marksurface])
+						.ToArray();
+				}
 			}
 
 			List<BspNode> nodes = new List<BspNode>();

@@ -58,6 +58,20 @@ namespace HL1BspReader
 		}
 	}
 
+	public class BspSurfaceEdge
+	{
+		public int SurfaceEdgeIndex { get; set; }
+
+		public int _EdgeIndex { get; set; }
+		public BspEdge Edge { get; set; }
+		public bool IsReversed => this._EdgeIndex < 0;
+
+		public override string ToString()
+		{
+			return $"SurfaceEdge {SurfaceEdgeIndex}";
+		}
+	}
+
 	public class BspFace
 	{
 		public int FaceIndex { get; set; }
@@ -68,8 +82,8 @@ namespace HL1BspReader
 		public short _Side { get; set; }
 		public bool IsFlippedFromPlane => this._Side != 0;
 
-		public int _FirstEdgeIndex { get; set; }
-		public short _NumberOfEdges { get; set; }
+		public int _FirstSurfaceEdgeIndex { get; set; }
+		public short _NumberOfSurfaceEdges { get; set; }
 		public BspEdge[] Edges { get; set; }
 
 		public short _TextureIndex { get; set; }
@@ -97,8 +111,9 @@ namespace HL1BspReader
 		public short BoundsMaxY { get; set; }
 		public short BoundsMaxZ { get; set; }
 
-		public ushort _FirstMarkSufaceIndex { get; set; }
-		public ushort _NumberOfMarkSufaces { get; set; }
+		public ushort _FirstMarksurfaceIndex { get; set; }
+		public ushort _NumberOfMarksurfaces { get; set; }
+		public BspFace[] Faces { get; set; }
 
 		public int AmbientLevel { get; set; }
 
