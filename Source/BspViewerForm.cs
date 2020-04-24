@@ -1,0 +1,179 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace HL1BspReader
+{
+	public partial class BspViewerForm : Form
+	{
+		#region Fields
+
+		private Bsp bsp;
+
+		#endregion Fields
+
+		#region Constructors
+
+		public BspViewerForm()
+		{
+			this.InitializeComponent();
+		}
+
+		#endregion Constructors
+
+		#region Events
+
+		private void modelComboBox_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			this.populateClipnodesTreeView();
+		}
+
+		private void hullsComboBox_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			this.populateClipnodesTreeView();
+		}
+
+		#endregion Events
+
+		#region Methods
+
+		internal void DockGameWindow(BspViewerGame bspViewerGame)
+		{
+			Form gameWindow = (Form)Control.FromHandle(bspViewerGame.Window.Handle);
+			gameWindow.FormBorderStyle = FormBorderStyle.None;
+			gameWindow.TopLevel = false;
+			gameWindow.Dock = DockStyle.Fill;
+
+			MethodInfo gameWindowClientSizeChangedMethod = bspViewerGame.GraphicsDeviceManager.GetType().GetMethod("GameWindowClientSizeChanged", BindingFlags.Instance | BindingFlags.NonPublic);
+			this.ResizeEnd += (sender, args) =>
+			{
+				gameWindowClientSizeChangedMethod.Invoke(bspViewerGame.GraphicsDeviceManager, new object[] { null, null });
+			};
+
+			this.mainSplitContainer.Panel2.Controls.Add(gameWindow);
+
+			this.loadBsp();
+		}
+
+		private void loadBsp()
+		{
+			this.bsp = BspReader.ReadFromFile(@"C:\Users\dexter\Desktop\Valve Hammer Editor\maps\bsptest.bsp");
+
+			this.modelComboBox.Items.Clear();
+			this.modelComboBox.Items.AddRange(this.bsp.Models.ToArray());
+			this.populateBspTreeView();
+			this.populateClipnodesTreeView();
+		}
+
+		private void populateBspTreeView()
+		{
+			this.bspTreeView.Nodes.Clear();
+
+			void populate(TreeNodeCollection uiCollection, BspNode parentNode)
+			{
+				TreeNode uiNode = new TreeNode(parentNode.ToString())
+				{
+					Tag = parentNode,
+				};
+				uiCollection.Add(uiNode);
+				if (parentNode.ChildANode != null)
+				{
+					populate(uiNode.Nodes, parentNode.ChildANode);
+				}
+				else
+				{
+					uiNode.Nodes.Add(new TreeNode(parentNode.ChildALeaf.ToString())
+					{
+						Tag = parentNode.ChildALeaf,
+					});
+				}
+				if (parentNode.ChildBNode != null)
+				{
+					populate(uiNode.Nodes, parentNode.ChildBNode);
+				}
+				else
+				{
+					uiNode.Nodes.Add(new TreeNode(parentNode.ChildBLeaf.ToString())
+					{
+						Tag = parentNode.ChildBLeaf,
+					});
+				}
+			}
+
+			populate(this.bspTreeView.Nodes, this.bsp.RootNode);
+			this.bspTreeView.ExpandAll();
+		}
+
+		private void populateClipnodesTreeView()
+		{
+			this.clipnodesTreeView.Nodes.Clear();
+
+			if (this.modelComboBox.SelectedItem == null) { return; }
+			if (this.hullsComboBox.SelectedItem == null) { return; }
+			BspModel selectedModel = (BspModel)this.modelComboBox.SelectedItem;
+
+			void populate(TreeNodeCollection uiCollection, BspClipnode parentClipnode)
+			{
+				TreeNode uiNode = new TreeNode(parentClipnode.ToString())
+				{
+					Tag = parentClipnode,
+				};
+				uiCollection.Add(uiNode);
+				if (parentClipnode.ChildAClipnode != null)
+				{
+					populate(uiNode.Nodes, parentClipnode.ChildAClipnode);
+				}
+				else
+				{
+					uiNode.Nodes.Add(new TreeNode(parentClipnode.ChildAContents.ToString())
+					{
+						Tag = parentClipnode.ChildAContents,
+					});
+				}
+				if (parentClipnode.ChildBClipnode != null)
+				{
+					populate(uiNode.Nodes, parentClipnode.ChildBClipnode);
+				}
+				else
+				{
+					uiNode.Nodes.Add(new TreeNode(parentClipnode.ChildBContents.ToString())
+					{
+						Tag = parentClipnode.ChildBContents,
+					});
+				}
+			}
+
+			BspClipnode clipnode = null;
+			if (this.hullsComboBox.SelectedIndex == 0)
+			{
+				clipnode = selectedModel.Clipnode0;
+			}
+			if (this.hullsComboBox.SelectedIndex == 1)
+			{
+				clipnode = selectedModel.Clipnode1;
+			}
+			if (this.hullsComboBox.SelectedIndex == 2)
+			{
+				clipnode = selectedModel.Clipnode2;
+			}
+			if (this.hullsComboBox.SelectedIndex == 3)
+			{
+				clipnode = selectedModel.Clipnode3;
+			}
+
+			populate(this.clipnodesTreeView.Nodes, clipnode);
+			this.clipnodesTreeView.ExpandAll();
+		}
+
+		#endregion Methods
+	}
+}
