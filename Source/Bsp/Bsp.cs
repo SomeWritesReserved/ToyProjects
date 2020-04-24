@@ -100,7 +100,7 @@ namespace HL1BspReader
 						NormalY = reader.ReadSingle(),
 						NormalZ = reader.ReadSingle(),
 						Distance = reader.ReadSingle(),
-						Type = reader.ReadInt32(),
+						_Type = reader.ReadInt32(),
 					});
 				}
 				if (reader.BaseStream.Position != reader.BaseStream.Length) { throw new InvalidDataException("Didn't read all"); }
@@ -136,10 +136,10 @@ namespace HL1BspReader
 					{
 						EdgeIndex = edgeIndex++,
 
-						VertexAIndex = vertexAIndex,
+						_VertexAIndex = vertexAIndex,
 						VertexA = vertices[vertexAIndex],
 
-						VertexBIndex = vertexBIndex,
+						_VertexBIndex = vertexBIndex,
 						VertexB = vertices[vertexBIndex],
 					});
 				}
@@ -157,15 +157,15 @@ namespace HL1BspReader
 					{
 						FaceIndex = faceIndex++,
 
-						PlaneIndex = planeIndex,
+						_PlaneIndex = planeIndex,
 						Plane = planes[planeIndex],
 
-						Side = reader.ReadInt16(),
+						_Side = reader.ReadInt16(),
 
-						FirstEdgeIndex = reader.ReadInt32(),
-						NumberOfEdges = reader.ReadInt16(),
+						_FirstEdgeIndex = reader.ReadInt32(),
+						_NumberOfEdges = reader.ReadInt16(),
 
-						TextureIndex = reader.ReadInt16(),
+						_TextureIndex = reader.ReadInt16(),
 						LightStyles = reader.ReadInt32(),
 						LightmapOffset = reader.ReadInt32(),
 					});
@@ -173,7 +173,7 @@ namespace HL1BspReader
 				if (reader.BaseStream.Position != reader.BaseStream.Length) { throw new InvalidDataException("Didn't read all"); }
 				foreach (BspFace face in faces)
 				{
-					face.Edges = edges.Skip(face.FirstEdgeIndex).Take(face.NumberOfEdges).ToArray();
+					face.Edges = edges.Skip(face._FirstEdgeIndex).Take(face._NumberOfEdges).ToArray();
 				}
 			}
 
@@ -197,8 +197,8 @@ namespace HL1BspReader
 						BoundsMaxY = reader.ReadInt16(),
 						BoundsMaxZ = reader.ReadInt16(),
 
-						FirstMarkSufaceIndex = reader.ReadUInt16(),
-						NumberOfMarkSufaces = reader.ReadUInt16(),
+						_FirstMarkSufaceIndex = reader.ReadUInt16(),
+						_NumberOfMarkSufaces = reader.ReadUInt16(),
 
 						AmbientLevel = reader.ReadInt32(),
 					});
@@ -217,11 +217,11 @@ namespace HL1BspReader
 					{
 						NodeIndex = nodeIndex++,
 
-						PlaneIndex = planeIndex,
+						_PlaneIndex = planeIndex,
 						Plane = planes[planeIndex],
 
-						ChildAIndex = reader.ReadInt16(),
-						ChildBIndex = reader.ReadInt16(),
+						_ChildAIndex = reader.ReadInt16(),
+						_ChildBIndex = reader.ReadInt16(),
 
 						BoundsMinX = reader.ReadInt16(),
 						BoundsMinY = reader.ReadInt16(),
@@ -230,30 +230,30 @@ namespace HL1BspReader
 						BoundsMaxY = reader.ReadInt16(),
 						BoundsMaxZ = reader.ReadInt16(),
 
-						FirstFaceIndex = reader.ReadUInt16(),
-						NumberOfFaces = reader.ReadUInt16(),
+						_FirstFaceIndex = reader.ReadUInt16(),
+						_NumberOfFaces = reader.ReadUInt16(),
 					});
 				}
 				if (reader.BaseStream.Position != reader.BaseStream.Length) { throw new InvalidDataException("Didn't read all"); }
 				foreach (BspNode node in nodes)
 				{
-					if (node.ChildAIndex > 0)
+					if (node._ChildAIndex > 0)
 					{
-						node.ChildANode = nodes[node.ChildAIndex];
+						node.ChildANode = nodes[node._ChildAIndex];
 					}
 					else
 					{
-						node.ChildALeaf = leafs[-1 - node.ChildAIndex];
+						node.ChildALeaf = leafs[-1 - node._ChildAIndex];
 					}
-					if (node.ChildBIndex > 0)
+					if (node._ChildBIndex > 0)
 					{
-						node.ChildBNode = nodes[node.ChildBIndex];
+						node.ChildBNode = nodes[node._ChildBIndex];
 					}
 					else
 					{
-						node.ChildBLeaf = leafs[-1 - node.ChildBIndex];
+						node.ChildBLeaf = leafs[-1 - node._ChildBIndex];
 					}
-					node.Faces = faces.Skip(node.FirstFaceIndex).Take(node.NumberOfFaces).ToArray();
+					node.Faces = faces.Skip(node._FirstFaceIndex).Take(node._NumberOfFaces).ToArray();
 				}
 			}
 
@@ -268,31 +268,31 @@ namespace HL1BspReader
 					{
 						ClipnodeIndex = clipnodeIndex++,
 
-						PlaneIndex = planeIndex,
+						_PlaneIndex = planeIndex,
 						Plane = planes[planeIndex],
 
-						ChildAIndex = reader.ReadInt16(),
-						ChildBIndex = reader.ReadInt16(),
+						_ChildAIndex = reader.ReadInt16(),
+						_ChildBIndex = reader.ReadInt16(),
 					});
 				}
 				if (reader.BaseStream.Position != reader.BaseStream.Length) { throw new InvalidDataException("Didn't read all"); }
 				foreach (BspClipnode clipnode in clipnodes)
 				{
-					if (clipnode.ChildAIndex > 0)
+					if (clipnode._ChildAIndex > 0)
 					{
-						clipnode.ChildAClipnode = clipnodes[clipnode.ChildAIndex];
+						clipnode.ChildAClipnode = clipnodes[clipnode._ChildAIndex];
 					}
 					else
 					{
-						clipnode.ChildAContents = (Contents)clipnode.ChildAIndex;
+						clipnode.ChildAContents = (Contents)clipnode._ChildAIndex;
 					}
-					if (clipnode.ChildBIndex > 0)
+					if (clipnode._ChildBIndex > 0)
 					{
-						clipnode.ChildBClipnode = clipnodes[clipnode.ChildBIndex];
+						clipnode.ChildBClipnode = clipnodes[clipnode._ChildBIndex];
 					}
 					else
 					{
-						clipnode.ChildBContents = (Contents)clipnode.ChildBIndex;
+						clipnode.ChildBContents = (Contents)clipnode._ChildBIndex;
 					}
 				}
 			}
@@ -318,25 +318,25 @@ namespace HL1BspReader
 						OriginY = reader.ReadSingle(),
 						OriginZ = reader.ReadSingle(),
 
-						Clipnode0Index = reader.ReadInt32(),
-						Clipnode1Index = reader.ReadInt32(),
-						Clipnode2Index = reader.ReadInt32(),
-						Clipnode3Index = reader.ReadInt32(),
+						_Clipnode0Index = reader.ReadInt32(),
+						_Clipnode1Index = reader.ReadInt32(),
+						_Clipnode2Index = reader.ReadInt32(),
+						_Clipnode3Index = reader.ReadInt32(),
 
 						VisLeafs = reader.ReadInt32(),
 
-						FirstFaceIndex = reader.ReadInt32(),
-						NumberOfFaces = reader.ReadInt32(),
+						_FirstFaceIndex = reader.ReadInt32(),
+						_NumberOfFaces = reader.ReadInt32(),
 					});
 				}
 				if (reader.BaseStream.Position != reader.BaseStream.Length) { throw new InvalidDataException("Didn't read all"); }
 				foreach (BspModel model in models)
 				{
-					model.Clipnode0 = clipnodes[model.Clipnode0Index];
-					model.Clipnode1 = clipnodes[model.Clipnode1Index];
-					model.Clipnode2 = clipnodes[model.Clipnode2Index];
-					model.Clipnode3 = clipnodes[model.Clipnode3Index];
-					model.Faces = faces.Skip(model.FirstFaceIndex).Take(model.NumberOfFaces).ToArray();
+					model.Clipnode0 = clipnodes[model._Clipnode0Index];
+					model.Clipnode1 = clipnodes[model._Clipnode1Index];
+					model.Clipnode2 = clipnodes[model._Clipnode2Index];
+					model.Clipnode3 = clipnodes[model._Clipnode3Index];
+					model.Faces = faces.Skip(model._FirstFaceIndex).Take(model._NumberOfFaces).ToArray();
 				}
 			}
 

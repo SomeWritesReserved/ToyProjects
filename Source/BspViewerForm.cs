@@ -42,6 +42,22 @@ namespace HL1BspReader
 			this.populateClipnodesTreeView();
 		}
 
+		private void bspTreeView_AfterSelect(object sender, TreeViewEventArgs e)
+		{
+			if (this.bspTreeView.SelectedNode != null)
+			{
+				this.propertyGrid.SelectedObject = this.bspTreeView.SelectedNode.Tag;
+			}
+		}
+
+		private void clipnodesTreeView_AfterSelect(object sender, TreeViewEventArgs e)
+		{
+			if (this.clipnodesTreeView.SelectedNode != null)
+			{
+				this.propertyGrid.SelectedObject = this.clipnodesTreeView.SelectedNode.Tag;
+			}
+		}
+
 		#endregion Events
 
 		#region Methods
@@ -53,13 +69,15 @@ namespace HL1BspReader
 			gameWindow.TopLevel = false;
 			gameWindow.Dock = DockStyle.Fill;
 
+			// This ugly just makes sure the XNA viewport gets updates if the user resizes the hosting form
 			MethodInfo gameWindowClientSizeChangedMethod = bspViewerGame.GraphicsDeviceManager.GetType().GetMethod("GameWindowClientSizeChanged", BindingFlags.Instance | BindingFlags.NonPublic);
 			this.ResizeEnd += (sender, args) =>
 			{
 				gameWindowClientSizeChangedMethod.Invoke(bspViewerGame.GraphicsDeviceManager, new object[] { null, null });
 			};
 
-			this.mainSplitContainer.Panel2.Controls.Add(gameWindow);
+			this.leftSplitContainer.Panel2.Controls.Add(gameWindow);
+			gameWindow.BeginInvoke(new Action(() => gameWindowClientSizeChangedMethod.Invoke(bspViewerGame.GraphicsDeviceManager, new object[] { null, null })));
 
 			this.loadBsp();
 		}

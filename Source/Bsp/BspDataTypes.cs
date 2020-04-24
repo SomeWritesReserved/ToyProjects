@@ -14,13 +14,13 @@ namespace HL1BspReader
 
 	public class BspPlane
 	{
-		public int PlaneIndex;
+		public int PlaneIndex { get; set; }
 
-		public float NormalX;
-		public float NormalY;
-		public float NormalZ;
-		public float Distance;
-		internal int Type;   // Maybe represents which axis this is most aligned with?
+		public float NormalX { get; set; }
+		public float NormalY { get; set; }
+		public float NormalZ { get; set; }
+		public float Distance { get; set; }
+		public int _Type { get; set; }   // Maybe represents which axis this is most aligned with?
 
 		public override string ToString()
 		{
@@ -30,11 +30,11 @@ namespace HL1BspReader
 
 	public class BspVertex
 	{
-		public int VertexIndex;
+		public int VertexIndex { get; set; }
 
-		public float X;
-		public float Y;
-		public float Z;
+		public float X { get; set; }
+		public float Y { get; set; }
+		public float Z { get; set; }
 
 		public override string ToString()
 		{
@@ -44,13 +44,13 @@ namespace HL1BspReader
 
 	public class BspEdge
 	{
-		public int EdgeIndex;
+		public int EdgeIndex { get; set; }
 
-		internal short VertexAIndex;
-		public BspVertex VertexA;
+		public short _VertexAIndex { get; set; }
+		public BspVertex VertexA { get; set; }
 
-		internal short VertexBIndex;
-		public BspVertex VertexB;
+		public short _VertexBIndex { get; set; }
+		public BspVertex VertexB { get; set; }
 
 		public override string ToString()
 		{
@@ -60,22 +60,22 @@ namespace HL1BspReader
 
 	public class BspFace
 	{
-		public int FaceIndex;
+		public int FaceIndex { get; set; }
 
-		internal int PlaneIndex;
-		public BspPlane Plane;
+		public int _PlaneIndex { get; set; }
+		public BspPlane Plane { get; set; }
 
-		internal short Side;
-		public bool IsFlippedFromPlane => this.Side != 0;
+		public short _Side { get; set; }
+		public bool IsFlippedFromPlane => this._Side != 0;
 
-		internal int FirstEdgeIndex;
-		internal short NumberOfEdges;
-		public BspEdge[] Edges;
+		public int _FirstEdgeIndex { get; set; }
+		public short _NumberOfEdges { get; set; }
+		public BspEdge[] Edges { get; set; }
 
-		internal short TextureIndex;
+		public short _TextureIndex { get; set; }
 
-		public int LightStyles;
-		public int LightmapOffset;
+		public int LightStyles { get; set; }
+		public int LightmapOffset { get; set; }
 
 		public override string ToString()
 		{
@@ -85,24 +85,24 @@ namespace HL1BspReader
 
 	public class BspLeaf
 	{
-		public int LeafIndex;
+		public int LeafIndex { get; set; }
 
-		public Contents Contents;
-		public int Visibility;
+		public Contents Contents { get; set; }
+		public int Visibility { get; set; }
 
-		public short BoundsMinX;
-		public short BoundsMinY;
-		public short BoundsMinZ;
-		public short BoundsMaxX;
-		public short BoundsMaxY;
-		public short BoundsMaxZ;
+		public short BoundsMinX { get; set; }
+		public short BoundsMinY { get; set; }
+		public short BoundsMinZ { get; set; }
+		public short BoundsMaxX { get; set; }
+		public short BoundsMaxY { get; set; }
+		public short BoundsMaxZ { get; set; }
 
-		internal ushort FirstMarkSufaceIndex;
-		internal ushort NumberOfMarkSufaces;
+		public ushort _FirstMarkSufaceIndex { get; set; }
+		public ushort _NumberOfMarkSufaces { get; set; }
 
-		public int AmbientLevel;
+		public int AmbientLevel { get; set; }
 
-		public int Debug_PointedToByNodeCount;
+		public int Debug_PointedToByNodeCount { get; set; }
 
 		public override string ToString()
 		{
@@ -112,30 +112,30 @@ namespace HL1BspReader
 
 	public class BspNode
 	{
-		public int NodeIndex;
+		public int NodeIndex { get; set; }
 
-		internal int PlaneIndex;
-		public BspPlane Plane;
+		public int _PlaneIndex { get; set; }
+		public BspPlane Plane { get; set; }
 
-		internal short ChildAIndex;
-		public BspNode ChildANode;
-		public BspLeaf ChildALeaf;
-		internal short ChildBIndex;
-		public BspNode ChildBNode;
-		public BspLeaf ChildBLeaf;
+		public short _ChildAIndex { get; set; }
+		public BspNode ChildANode { get; set; }
+		public BspLeaf ChildALeaf { get; set; }
+		public short _ChildBIndex { get; set; }
+		public BspNode ChildBNode { get; set; }
+		public BspLeaf ChildBLeaf { get; set; }
 
-		public short BoundsMinX;
-		public short BoundsMinY;
-		public short BoundsMinZ;
-		public short BoundsMaxX;
-		public short BoundsMaxY;
-		public short BoundsMaxZ;
+		public short BoundsMinX { get; set; }
+		public short BoundsMinY { get; set; }
+		public short BoundsMinZ { get; set; }
+		public short BoundsMaxX { get; set; }
+		public short BoundsMaxY { get; set; }
+		public short BoundsMaxZ { get; set; }
 
-		internal ushort FirstFaceIndex;
-		internal ushort NumberOfFaces;
-		public BspFace[] Faces;
+		public ushort _FirstFaceIndex { get; set; }
+		public ushort _NumberOfFaces { get; set; }
+		public BspFace[] Faces { get; set; }
 
-		public int Debug_PointedToByNodeCount;
+		public int Debug_PointedToByNodeCount { get; set; }
 
 		public override string ToString()
 		{
@@ -148,19 +148,19 @@ namespace HL1BspReader
 
 	public class BspClipnode
 	{
-		public int ClipnodeIndex;
+		public int ClipnodeIndex { get; set; }
 
-		internal int PlaneIndex;
-		public BspPlane Plane;
+		public int _PlaneIndex { get; set; }
+		public BspPlane Plane { get; set; }
 
-		internal short ChildAIndex;
-		public BspClipnode ChildAClipnode;
-		public Contents ChildAContents;
-		internal short ChildBIndex;
-		public BspClipnode ChildBClipnode;
-		public Contents ChildBContents;
+		public short _ChildAIndex { get; set; }
+		public BspClipnode ChildAClipnode { get; set; }
+		public Contents ChildAContents { get; set; }
+		public short _ChildBIndex { get; set; }
+		public BspClipnode ChildBClipnode { get; set; }
+		public Contents ChildBContents { get; set; }
 
-		public int Debug_PointedToByClipnodeCount;
+		public int Debug_PointedToByClipnodeCount { get; set; }
 
 		public override string ToString()
 		{
@@ -173,33 +173,33 @@ namespace HL1BspReader
 
 	public class BspModel
 	{
-		public int ModelIndex;
+		public int ModelIndex { get; set; }
 
-		public float BoundsMinX;
-		public float BoundsMinY;
-		public float BoundsMinZ;
-		public float BoundsMaxX;
-		public float BoundsMaxY;
-		public float BoundsMaxZ;
+		public float BoundsMinX { get; set; }
+		public float BoundsMinY { get; set; }
+		public float BoundsMinZ { get; set; }
+		public float BoundsMaxX { get; set; }
+		public float BoundsMaxY { get; set; }
+		public float BoundsMaxZ { get; set; }
 
-		public float OriginX;
-		public float OriginY;
-		public float OriginZ;
+		public float OriginX { get; set; }
+		public float OriginY { get; set; }
+		public float OriginZ { get; set; }
 
-		internal int Clipnode0Index;
-		public BspClipnode Clipnode0;
-		internal int Clipnode1Index;
-		public BspClipnode Clipnode1;
-		internal int Clipnode2Index;
-		public BspClipnode Clipnode2;
-		internal int Clipnode3Index;
-		public BspClipnode Clipnode3;
+		public int _Clipnode0Index { get; set; }
+		public BspClipnode Clipnode0 { get; set; }
+		public int _Clipnode1Index { get; set; }
+		public BspClipnode Clipnode1 { get; set; }
+		public int _Clipnode2Index { get; set; }
+		public BspClipnode Clipnode2 { get; set; }
+		public int _Clipnode3Index { get; set; }
+		public BspClipnode Clipnode3 { get; set; }
 
-		public int VisLeafs;
+		public int VisLeafs { get; set; }
 
-		internal int FirstFaceIndex;
-		internal int NumberOfFaces;
-		public BspFace[] Faces;
+		public int _FirstFaceIndex { get; set; }
+		public int _NumberOfFaces { get; set; }
+		public BspFace[] Faces { get; set; }
 
 		public override string ToString()
 		{
