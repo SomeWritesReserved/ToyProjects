@@ -19,9 +19,9 @@ namespace HL1BspReader
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 
-			using (BspViewerGame bspViewerGame = new BspViewerGame())
+			using (GameView gameView = new GameView())
 			{
-				bspViewerGame.Run();
+				gameView.Run();
 			}
 		}
 

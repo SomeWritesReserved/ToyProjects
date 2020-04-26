@@ -85,9 +85,14 @@ namespace HL1BspReader
 		public static void RenderBox<TEffect>(GraphicsDevice graphicsDevice, TEffect effect, Vector3 position, Vector3 scale, Quaternion rotation)
 			where TEffect : Effect, IEffectMatrices
 		{
-			effect.World = Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(position) * Matrix.CreateScale(scale);
+			effect.World = Matrix.CreateScale(scale)* Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(position);
 			effect.CurrentTechnique.Passes[0].Apply();
 			graphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, ShapeRenderHelper.boxRenderVertices, 0, ShapeRenderHelper.boxRenderVertices.Length / 3);
+		}
+
+		private static Vector3 ToDirectXVector(this Vector3 vector)
+		{
+			return new Vector3(vector.X, vector.Z, -vector.Y);
 		}
 
 		#endregion Methods

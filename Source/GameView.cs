@@ -9,11 +9,11 @@ using Microsoft.Xna.Framework.Input;
 
 namespace HL1BspReader
 {
-	public class BspViewerGame : Game
+	public class GameView : Game
 	{
 		#region Fields
 
-		private BspViewerForm bspViewerForm;
+		private MainForm parentForm;
 		
 		private readonly float cameraFastSpeed = 10.0f;
 		private readonly float cameraSlowSpeed = 4.0f;
@@ -25,7 +25,7 @@ namespace HL1BspReader
 		private MouseState previousMouseState;
 		private Point mouseDownPoint;
 		private bool isDragging;
-		private Vector3 cameraPosition;
+		private Vector3 cameraPosition = new Vector3(45, 12, 90);
 		private Vector3 cameraRotation;
 		private Matrix cameraView;
 
@@ -35,7 +35,7 @@ namespace HL1BspReader
 
 		#region Constructors
 
-		public BspViewerGame()
+		public GameView()
 		{
 			this.GraphicsDeviceManager = new GraphicsDeviceManager(this);
 			this.GraphicsDeviceManager.GraphicsProfile = GraphicsProfile.HiDef;
@@ -57,9 +57,9 @@ namespace HL1BspReader
 		{
 			base.LoadContent();
 
-			this.bspViewerForm = new BspViewerForm();
-			this.bspViewerForm.DockGameWindow(this);
-			this.bspViewerForm.Show();
+			this.parentForm = new MainForm();
+			this.parentForm.DockGameWindow(this);
+			this.parentForm.Show();
 
 			this.basicEffect = new BasicEffect(this.GraphicsDevice);
 			this.basicEffect.LightingEnabled = true;
@@ -99,11 +99,12 @@ namespace HL1BspReader
 		{
 			this.GraphicsDeviceManager.GraphicsDevice.Clear(Color.AliceBlue);
 			
-			this.basicEffect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(90.0f), this.GraphicsDevice.Viewport.AspectRatio, 0.1f, 1000.0f);
+			this.basicEffect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(90.0f), this.GraphicsDevice.Viewport.AspectRatio, 0.1f, 10000.0f);
 			this.basicEffect.View = this.cameraView;
 			this.basicEffect.World = Matrix.Identity;
 
-			ShapeRenderHelper.RenderBox(this.GraphicsDevice, this.basicEffect, Vector3.Zero, new Vector3(16, 36, 16), Quaternion.Identity);
+			ShapeRenderHelper.RenderBox(this.GraphicsDevice, this.basicEffect, new Vector3(0, 36, 0), new Vector3(16, 36, 16), Quaternion.Identity);
+			BspRender.RenderBspModel(this.GraphicsDevice, this.basicEffect, this.parentForm.Bsp.Models[0]);
 
 			base.Draw(gameTime);
 		}

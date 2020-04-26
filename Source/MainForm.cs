@@ -13,22 +13,22 @@ using System.Windows.Forms;
 
 namespace HL1BspReader
 {
-	public partial class BspViewerForm : Form
+	public partial class MainForm : Form
 	{
-		#region Fields
-
-		private Bsp bsp;
-
-		#endregion Fields
-
 		#region Constructors
 
-		public BspViewerForm()
+		public MainForm()
 		{
 			this.InitializeComponent();
 		}
 
 		#endregion Constructors
+
+		#region Properties
+
+		public Bsp Bsp { get; set; }
+
+		#endregion Properties
 
 		#region Events
 
@@ -62,32 +62,32 @@ namespace HL1BspReader
 
 		#region Methods
 
-		internal void DockGameWindow(BspViewerGame bspViewerGame)
+		internal void DockGameWindow(GameView gameView)
 		{
-			Form gameWindow = (Form)Control.FromHandle(bspViewerGame.Window.Handle);
+			Form gameWindow = (Form)Control.FromHandle(gameView.Window.Handle);
 			gameWindow.FormBorderStyle = FormBorderStyle.None;
 			gameWindow.TopLevel = false;
 			gameWindow.Dock = DockStyle.Fill;
 
 			// This ugly just makes sure the XNA viewport gets updates if the user resizes the hosting form
-			MethodInfo gameWindowClientSizeChangedMethod = bspViewerGame.GraphicsDeviceManager.GetType().GetMethod("GameWindowClientSizeChanged", BindingFlags.Instance | BindingFlags.NonPublic);
+			MethodInfo gameWindowClientSizeChangedMethod = gameView.GraphicsDeviceManager.GetType().GetMethod("GameWindowClientSizeChanged", BindingFlags.Instance | BindingFlags.NonPublic);
 			this.ResizeEnd += (sender, args) =>
 			{
-				gameWindowClientSizeChangedMethod.Invoke(bspViewerGame.GraphicsDeviceManager, new object[] { null, null });
+				gameWindowClientSizeChangedMethod.Invoke(gameView.GraphicsDeviceManager, new object[] { null, null });
 			};
 
 			this.leftSplitContainer.Panel2.Controls.Add(gameWindow);
-			gameWindow.BeginInvoke(new Action(() => gameWindowClientSizeChangedMethod.Invoke(bspViewerGame.GraphicsDeviceManager, new object[] { null, null })));
+			gameWindow.BeginInvoke(new Action(() => gameWindowClientSizeChangedMethod.Invoke(gameView.GraphicsDeviceManager, new object[] { null, null })));
 
 			this.loadBsp();
 		}
 
 		private void loadBsp()
 		{
-			this.bsp = BspReader.ReadFromFile(@"C:\Users\dexter\Desktop\Valve Hammer Editor\maps\bsptest.bsp");
+			this.Bsp = BspReader.ReadFromFile(@"C:\Users\dexter\Desktop\Valve Hammer Editor\maps\bsptest.bsp");
 
 			this.modelComboBox.Items.Clear();
-			this.modelComboBox.Items.AddRange(this.bsp.Models.ToArray());
+			this.modelComboBox.Items.AddRange(this.Bsp.Models.ToArray());
 			this.populateBspTreeView();
 			this.populateClipnodesTreeView();
 		}
@@ -127,7 +127,7 @@ namespace HL1BspReader
 				}
 			}
 
-			populate(this.bspTreeView.Nodes, this.bsp.RootNode);
+			populate(this.bspTreeView.Nodes, this.Bsp.RootNode);
 			this.bspTreeView.ExpandAll();
 		}
 

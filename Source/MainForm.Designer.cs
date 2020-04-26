@@ -1,6 +1,6 @@
 ﻿namespace HL1BspReader
 {
-	partial class BspViewerForm
+	partial class MainForm
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -195,14 +195,14 @@
 			this.rightSplitContainer.SplitterDistance = 1202;
 			this.rightSplitContainer.TabIndex = 2;
 			// 
-			// BspViewerForm
+			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1569, 805);
 			this.Controls.Add(this.rightSplitContainer);
-			this.Name = "BspViewerForm";
-			this.Text = "Bsp Viewer";
+			this.Name = "MainForm";
+			this.Text = "Bsp Reader and Viewer";
 			this.leftSplitContainer.Panel1.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.leftSplitContainer)).EndInit();
 			this.leftSplitContainer.ResumeLayout(false);
