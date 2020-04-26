@@ -191,7 +191,12 @@ namespace HL1BspReader
 				foreach (BspFace face in faces)
 				{
 					face.Edges = surfaceEdges.Skip(face._FirstSurfaceEdgeIndex).Take(face._NumberOfSurfaceEdges)
-						.Select((surfaceEdge) => surfaceEdge.Edge)
+						.Select((surfaceEdge) => !surfaceEdge.IsReversed ? surfaceEdge.Edge : new BspEdge()
+						{
+							EdgeIndex = -surfaceEdge.Edge.EdgeIndex,
+							VertexA = surfaceEdge.Edge.VertexB,
+							VertexB = surfaceEdge.Edge.VertexA,
+						})
 						.ToArray();
 				}
 			}
