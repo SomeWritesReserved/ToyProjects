@@ -97,7 +97,7 @@ namespace HL1BspReader
 
 		protected override void Draw(GameTime gameTime)
 		{
-			this.GraphicsDeviceManager.GraphicsDevice.Clear(Color.AliceBlue);
+			this.GraphicsDeviceManager.GraphicsDevice.Clear(Color.Black);
 			
 			this.basicEffect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(90.0f), this.GraphicsDevice.Viewport.AspectRatio, 0.1f, 10000.0f);
 			this.basicEffect.View = this.cameraView;
