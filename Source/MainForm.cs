@@ -28,6 +28,8 @@ namespace HL1BspReader
 
 		public Bsp Bsp { get; set; }
 
+		public Microsoft.Xna.Framework.Plane? SelectedPlane { get; private set; }
+
 		#endregion Properties
 
 		#region Events
@@ -47,6 +49,15 @@ namespace HL1BspReader
 			if (this.bspTreeView.SelectedNode != null)
 			{
 				this.propertyGrid.SelectedObject = this.bspTreeView.SelectedNode.Tag;
+				if (this.bspTreeView.SelectedNode.Tag is BspNode)
+				{
+					BspNode node = (BspNode)this.bspTreeView.SelectedNode.Tag;
+					this.SelectedPlane = new Microsoft.Xna.Framework.Plane(new Microsoft.Xna.Framework.Vector3(node.Plane.NormalX, node.Plane.NormalY, node.Plane.NormalZ).ToDirectXVector(), node.Plane.Distance);
+				}
+				else
+				{
+					this.SelectedPlane = null;
+				}
 			}
 		}
 
@@ -55,6 +66,15 @@ namespace HL1BspReader
 			if (this.clipnodesTreeView.SelectedNode != null)
 			{
 				this.propertyGrid.SelectedObject = this.clipnodesTreeView.SelectedNode.Tag;
+				if (this.clipnodesTreeView.SelectedNode.Tag is BspClipnode)
+				{
+					BspClipnode clipnode = (BspClipnode)this.clipnodesTreeView.SelectedNode.Tag;
+					this.SelectedPlane = new Microsoft.Xna.Framework.Plane(new Microsoft.Xna.Framework.Vector3(clipnode.Plane.NormalX, clipnode.Plane.NormalY, clipnode.Plane.NormalZ).ToDirectXVector(), clipnode.Plane.Distance);
+				}
+				else
+				{
+					this.SelectedPlane = null;
+				}
 			}
 		}
 

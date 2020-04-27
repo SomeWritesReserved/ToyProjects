@@ -16,7 +16,8 @@ namespace HL1BspReader
 		private MainForm parentForm;
 
 		private readonly float cameraFastSpeed = 10.0f;
-		private readonly float cameraSlowSpeed = 4.0f;
+		private readonly float cameraNormalSpeed = 4.0f;
+		private readonly float cameraSlowSpeed = 1.0f;
 		private readonly float mouseLookScale = 0.17f;
 
 		private KeyboardState currentKeyboardState;
@@ -106,38 +107,39 @@ namespace HL1BspReader
 			ShapeRenderHelper.RenderBox(this.GraphicsDevice, this.basicEffect, new Vector3(0, 36, 0), new Vector3(16, 36, 16), Quaternion.Identity);
 			BspRender.RenderBspModel(this.GraphicsDevice, this.basicEffect, this.parentForm.Bsp.Models[0]);
 
+			if (this.parentForm.SelectedPlane != null)
 			{
-				this.GraphicsDevice.BlendState = BlendState.AlphaBlend;
-				this.basicEffect.LightingEnabled = false;
-				this.basicEffect.Alpha = 0.5f;
-
-				Plane selectedPlane = new Plane(new Vector3(1, 1, 1), 72);
-				this.basicEffect.DiffuseColor = Color.Blue.ToVector3();
-				ShapeRenderHelper.RenderPlane(this.GraphicsDevice, this.basicEffect, selectedPlane);
-				this.basicEffect.DiffuseColor = Color.Orchid.ToVector3();
-				ShapeRenderHelper.RenderPlane(this.GraphicsDevice, this.basicEffect, new Plane(-selectedPlane.Normal, -selectedPlane.D));
-
-				this.GraphicsDevice.BlendState = BlendState.Opaque;
-				this.basicEffect.LightingEnabled = true;
-				this.basicEffect.DiffuseColor = Color.White.ToVector3();
-				this.basicEffect.Alpha = 1.0f;
-			}
-			{
-				this.basicEffect.DiffuseColor = Color.Black.ToVector3();
-				this.basicEffect.LightingEnabled = false;
-				this.GraphicsDevice.RasterizerState = new RasterizerState() { FillMode = FillMode.WireFrame };
-				this.basicEffect.World = Matrix.Identity;
-				this.basicEffect.CurrentTechnique.Passes[0].Apply();
-				this.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, new VertexPositionColor[]
 				{
-					new VertexPositionColor(Vector3.Zero, Color.Black),
-					new VertexPositionColor(new Vector3(1, 1, 1) * 72, Color.Black),
-				}, 0, 1);
-				this.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-				this.basicEffect.LightingEnabled = true;
-				this.basicEffect.DiffuseColor = Color.White.ToVector3();
-			}
+					this.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+					this.basicEffect.LightingEnabled = false;
+					this.basicEffect.Alpha = 0.5f;
 
+					this.basicEffect.DiffuseColor = Color.Blue.ToVector3();
+					ShapeRenderHelper.RenderPlane(this.GraphicsDevice, this.basicEffect, this.parentForm.SelectedPlane.Value);
+					this.basicEffect.DiffuseColor = Color.Orchid.ToVector3();
+					ShapeRenderHelper.RenderPlane(this.GraphicsDevice, this.basicEffect, new Plane(-this.parentForm.SelectedPlane.Value.Normal, -this.parentForm.SelectedPlane.Value.D));
+
+					this.GraphicsDevice.BlendState = BlendState.Opaque;
+					this.basicEffect.LightingEnabled = true;
+					this.basicEffect.DiffuseColor = Color.White.ToVector3();
+					this.basicEffect.Alpha = 1.0f;
+				}
+				{
+					this.basicEffect.DiffuseColor = Color.Black.ToVector3();
+					this.basicEffect.LightingEnabled = false;
+					this.GraphicsDevice.RasterizerState = new RasterizerState() { FillMode = FillMode.WireFrame };
+					this.basicEffect.World = Matrix.Identity;
+					this.basicEffect.CurrentTechnique.Passes[0].Apply();
+					this.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, new VertexPositionColor[]
+					{
+					new VertexPositionColor(Vector3.Zero, Color.Black),
+					new VertexPositionColor(this.parentForm.SelectedPlane.Value.Normal * this.parentForm.SelectedPlane.Value.D, Color.Black),
+					}, 0, 1);
+					this.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+					this.basicEffect.LightingEnabled = true;
+					this.basicEffect.DiffuseColor = Color.White.ToVector3();
+				}
+			}
 
 			base.Draw(gameTime);
 		}
@@ -187,7 +189,9 @@ namespace HL1BspReader
 			if (vectorMovement != Vector3.Zero)
 			{
 				vectorMovement.Normalize();
-				float cameraSpeed = this.currentKeyboardState.IsKeyDown(Keys.LeftShift) ? this.cameraFastSpeed : this.cameraSlowSpeed;
+				float cameraSpeed = this.cameraNormalSpeed;
+				if (this.currentKeyboardState.IsKeyDown(Keys.LeftShift)) { cameraSpeed = this.cameraFastSpeed; }
+				else if (this.currentKeyboardState.IsKeyDown(Keys.LeftControl)) { cameraSpeed = this.cameraSlowSpeed; }
 				vectorMovement = Vector3.Transform(vectorMovement * cameraSpeed, rotation);
 				this.cameraPosition += vectorMovement;
 			}

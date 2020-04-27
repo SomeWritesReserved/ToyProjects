@@ -94,13 +94,14 @@ namespace HL1BspReader
 			ShapeRenderHelper.planeRenderVertices = new VertexPositionNormalTexture[]
 			{
 				// Top side
-				new VertexPositionNormalTexture(new Vector3(-unit, 0, -unit), Vector3.Up, new Vector2(0, 0)),
+				new VertexPositionNormalTexture(new Vector3(0, 0, 0), Vector3.Up, new Vector2(0, 0)),
 				new VertexPositionNormalTexture(new Vector3(unit, 0, unit), Vector3.Up, new Vector2(0, 0)),
 				new VertexPositionNormalTexture(new Vector3(-unit, 0, unit), Vector3.Up, new Vector2(0, 0)),
 
+				new VertexPositionNormalTexture(new Vector3(0, 0, 0), Vector3.Up, new Vector2(0, 0)),
 				new VertexPositionNormalTexture(new Vector3(-unit, 0, -unit), Vector3.Up, new Vector2(0, 0)),
 				new VertexPositionNormalTexture(new Vector3(unit, 0, -unit), Vector3.Up, new Vector2(0, 0)),
-				new VertexPositionNormalTexture(new Vector3(unit, 0, unit), Vector3.Up, new Vector2(0, 0)),
+
 			};
 		}
 
