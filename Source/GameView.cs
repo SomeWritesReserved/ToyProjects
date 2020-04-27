@@ -25,8 +25,8 @@ namespace HL1BspReader
 		private MouseState previousMouseState;
 		private Point mouseDownPoint;
 		private bool isDragging;
-		private Vector3 cameraPosition = new Vector3(45, 12, 90);
-		private Vector3 cameraRotation;
+		private Vector3 cameraPosition = new Vector3(0, 0, 0);
+		private Vector3 cameraRotation = new Vector3(MathHelper.PiOver4, -0.616F, 0);
 		private Matrix cameraView;
 
 		private BasicEffect basicEffect;
@@ -161,9 +161,12 @@ namespace HL1BspReader
 			Mouse.SetPosition(this.mouseDownPoint.X, this.mouseDownPoint.Y);
 		}
 
+		private bool moved = false;
 		private void updateMovement()
 		{
-			Quaternion rotation = Quaternion.CreateFromYawPitchRoll(this.cameraRotation.X, this.cameraRotation.Y, this.cameraRotation.Z);
+			//Quaternion rotation = Quaternion.CreateFromYawPitchRoll(this.cameraRotation.X, this.cameraRotation.Y, this.cameraRotation.Z);
+			Quaternion rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, this.cameraRotation.X)
+				* Quaternion.CreateFromAxisAngle(Vector3.UnitX, this.cameraRotation.Y);
 			Vector3 vectorMovement = Vector3.Zero;
 
 			if (this.currentKeyboardState.IsKeyDown(Keys.W))
@@ -186,9 +189,13 @@ namespace HL1BspReader
 
 			if (vectorMovement != Vector3.Zero)
 			{
+
+				if (moved && !this.currentKeyboardState.IsKeyDown(Keys.X)) { return; }
+				moved = true;
 				vectorMovement.Normalize();
 				float cameraSpeed = this.currentKeyboardState.IsKeyDown(Keys.LeftShift) ? this.cameraFastSpeed : this.cameraSlowSpeed;
-				vectorMovement = Vector3.Transform(vectorMovement * cameraSpeed, rotation);
+				if (!this.currentKeyboardState.IsKeyDown(Keys.X)) { cameraSpeed = 124.70765f; }
+				vectorMovement = Vector3.Transform(vectorMovement, rotation) * cameraSpeed;
 				this.cameraPosition += vectorMovement;
 			}
 		}
