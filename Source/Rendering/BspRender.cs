@@ -52,19 +52,4 @@ namespace HL1BspReader
 
 		#endregion Methods
 	}
-
-	public static class VectorHelpers
-	{
-		#region Methods
-
-		/// <summary>
-		/// Converts an outside vector into a vector that DirectX expects (Y = up).
-		/// </summary>
-		public static Vector3 ToDirectXVector(this Vector3 vector)
-		{
-			return new Vector3(vector.X, vector.Z, -vector.Y);
-		}
-
-		#endregion Methods
-	}
 }

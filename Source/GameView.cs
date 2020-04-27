@@ -14,7 +14,7 @@ namespace HL1BspReader
 		#region Fields
 
 		private MainForm parentForm;
-		
+
 		private readonly float cameraFastSpeed = 10.0f;
 		private readonly float cameraSlowSpeed = 4.0f;
 		private readonly float mouseLookScale = 0.17f;
@@ -81,7 +81,7 @@ namespace HL1BspReader
 			{
 				this.isDragging = false;
 			}
-			
+
 			if (this.isDragging)
 			{
 				this.updateCameraLook();
@@ -98,13 +98,46 @@ namespace HL1BspReader
 		protected override void Draw(GameTime gameTime)
 		{
 			this.GraphicsDeviceManager.GraphicsDevice.Clear(Color.Black);
-			
+
 			this.basicEffect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(90.0f), this.GraphicsDevice.Viewport.AspectRatio, 0.1f, 10000.0f);
 			this.basicEffect.View = this.cameraView;
 			this.basicEffect.World = Matrix.Identity;
 
 			ShapeRenderHelper.RenderBox(this.GraphicsDevice, this.basicEffect, new Vector3(0, 36, 0), new Vector3(16, 36, 16), Quaternion.Identity);
 			BspRender.RenderBspModel(this.GraphicsDevice, this.basicEffect, this.parentForm.Bsp.Models[0]);
+
+			{
+				this.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+				this.basicEffect.LightingEnabled = false;
+				this.basicEffect.Alpha = 0.5f;
+
+				Plane selectedPlane = new Plane(new Vector3(1, 1, 1), 72);
+				this.basicEffect.DiffuseColor = Color.Blue.ToVector3();
+				ShapeRenderHelper.RenderPlane(this.GraphicsDevice, this.basicEffect, selectedPlane);
+				this.basicEffect.DiffuseColor = Color.Orchid.ToVector3();
+				ShapeRenderHelper.RenderPlane(this.GraphicsDevice, this.basicEffect, new Plane(-selectedPlane.Normal, -selectedPlane.D));
+
+				this.GraphicsDevice.BlendState = BlendState.Opaque;
+				this.basicEffect.LightingEnabled = true;
+				this.basicEffect.DiffuseColor = Color.White.ToVector3();
+				this.basicEffect.Alpha = 1.0f;
+			}
+			{
+				this.basicEffect.DiffuseColor = Color.Black.ToVector3();
+				this.basicEffect.LightingEnabled = false;
+				this.GraphicsDevice.RasterizerState = new RasterizerState() { FillMode = FillMode.WireFrame };
+				this.basicEffect.World = Matrix.Identity;
+				this.basicEffect.CurrentTechnique.Passes[0].Apply();
+				this.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, new VertexPositionColor[]
+				{
+					new VertexPositionColor(Vector3.Zero, Color.Black),
+					new VertexPositionColor(new Vector3(1, 1, 1) * 72, Color.Black),
+				}, 0, 1);
+				this.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+				this.basicEffect.LightingEnabled = true;
+				this.basicEffect.DiffuseColor = Color.White.ToVector3();
+			}
+
 
 			base.Draw(gameTime);
 		}

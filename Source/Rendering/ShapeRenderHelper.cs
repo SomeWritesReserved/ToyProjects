@@ -13,6 +13,7 @@ namespace HL1BspReader
 		#region Fields
 
 		private static readonly VertexPositionNormalTexture[] boxRenderVertices;
+		private static readonly VertexPositionNormalTexture[] planeRenderVertices;
 
 		#endregion Fields
 
@@ -76,6 +77,31 @@ namespace HL1BspReader
 				new VertexPositionNormalTexture(new Vector3(-1, 1, 1), Vector3.Backward, new Vector2(x3, y1)),
 				new VertexPositionNormalTexture(new Vector3(1, -1, 1), Vector3.Backward, new Vector2(x4, y2)),
 			};
+
+			// Vector3.Up (0, 1, 0) is the base-case
+			// (-1, 1)        (1, 1)
+			// __________________
+			// |              . |
+			// |            .   |
+			// |          .     |
+			// |     (0, 0)     |
+			// |      .         |
+			// |    .           |
+			// |  .             |
+			// |________________|
+			// (-1, -1)       (1, -1)
+			const float unit = 10_000;
+			ShapeRenderHelper.planeRenderVertices = new VertexPositionNormalTexture[]
+			{
+				// Top side
+				new VertexPositionNormalTexture(new Vector3(-unit, 0, -unit), Vector3.Up, new Vector2(0, 0)),
+				new VertexPositionNormalTexture(new Vector3(unit, 0, unit), Vector3.Up, new Vector2(0, 0)),
+				new VertexPositionNormalTexture(new Vector3(-unit, 0, unit), Vector3.Up, new Vector2(0, 0)),
+
+				new VertexPositionNormalTexture(new Vector3(-unit, 0, -unit), Vector3.Up, new Vector2(0, 0)),
+				new VertexPositionNormalTexture(new Vector3(unit, 0, -unit), Vector3.Up, new Vector2(0, 0)),
+				new VertexPositionNormalTexture(new Vector3(unit, 0, unit), Vector3.Up, new Vector2(0, 0)),
+			};
 		}
 
 		#endregion Constructors
@@ -85,14 +111,18 @@ namespace HL1BspReader
 		public static void RenderBox<TEffect>(GraphicsDevice graphicsDevice, TEffect effect, Vector3 position, Vector3 scale, Quaternion rotation)
 			where TEffect : Effect, IEffectMatrices
 		{
-			effect.World = Matrix.CreateScale(scale)* Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(position);
+			effect.World = Matrix.CreateScale(scale) * Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(position);
 			effect.CurrentTechnique.Passes[0].Apply();
 			graphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, ShapeRenderHelper.boxRenderVertices, 0, ShapeRenderHelper.boxRenderVertices.Length / 3);
 		}
 
-		private static Vector3 ToDirectXVector(this Vector3 vector)
+		public static void RenderPlane<TEffect>(GraphicsDevice graphicsDevice, TEffect effect, Plane plane)
+			where TEffect : Effect, IEffectMatrices
 		{
-			return new Vector3(vector.X, vector.Z, -vector.Y);
+			Quaternion rotation = Vector3.Up.GetRotationTo(plane.Normal);
+			effect.World = Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(plane.Normal * plane.D);
+			effect.CurrentTechnique.Passes[0].Apply();
+			graphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, ShapeRenderHelper.planeRenderVertices, 0, ShapeRenderHelper.planeRenderVertices.Length / 3);
 		}
 
 		#endregion Methods

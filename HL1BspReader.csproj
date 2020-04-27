@@ -60,6 +60,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Source\Rendering\BspRender.cs" />
     <Compile Include="Source\Rendering\ShapeRenderHelper.cs" />
+    <Compile Include="Source\Rendering\VectorHelper.cs" />
     <EmbeddedResource Include="Source\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
       <SubType>Designer</SubType>
