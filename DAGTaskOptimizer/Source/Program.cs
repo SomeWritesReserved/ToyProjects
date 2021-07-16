@@ -10,37 +10,38 @@ namespace DAGTaskOptimizer
 
 		public static void Main(string[] args)
 		{
-			Activity rootA = new Activity("rootA", 5);
-			Activity rootB = new Activity("rootB", 100);
+			Activity t0_A = new Activity("t0_A", 5);
+			Activity t0_B = new Activity("t0_B", 100);
 
-			Activity rootB_t1A = new Activity("rootB_t1A", 20);
-			Activity rootB_t1B = new Activity("rootB_t1B", 10);
-			Activity rootB_t1C = new Activity("rootB_t1C", 5);
+			Activity t1_A = new Activity("t1_A", 20);
+			Activity t1_B = new Activity("t1_B", 10);
+			Activity t1_C = new Activity("t1_C", 5);
 
-			Activity rootA_t2A = new Activity("rootA_t2A", 10);
-			Activity rootB_t2A = new Activity("rootB_t2A", 30);
-			Activity rootB_t2B = new Activity("rootB_t2B", 5);
+			Activity t2_A = new Activity("t2_A", 10);
+			Activity t2_B = new Activity("t2_B", 30);
+			Activity t2_C = new Activity("t2_C", 5);
 
-			Activity rootAB_t3A = new Activity("rootAB_t3A", 10);
+			Activity t3_A = new Activity("t3_A", 10);
+			Activity t3_B = new Activity("t3_B", 15);
 
-			Activity rootB_final = new Activity("rootB_final", 15);
-			Activity rootAB_final = new Activity("rootAB_final", 5);
+			Activity t4_A = new Activity("t4_A", 5);
 
-			rootA.Subsequent.AddRange(new[] { rootA_t2A });
-			rootB.Subsequent.AddRange(new[] { rootB_t1A, rootB_t1B, rootB_t1C });
-			rootB_t1A.Subsequent.AddRange(new[] { rootA_t2A });
-			rootB_t1B.Subsequent.AddRange(new[] { rootAB_t3A });
-			rootB_t1C.Subsequent.AddRange(new[] { rootB_t2A, rootB_t2B });
-			rootA_t2A.Subsequent.AddRange(new[] { rootAB_t3A });
-			rootB_t2A.Subsequent.AddRange(new[] { rootAB_t3A });
-			rootB_t2B.Subsequent.AddRange(new[] { rootAB_final, rootB_final });
-			rootAB_t3A.Subsequent.AddRange(new[] { rootAB_final });
+			t4_A.Requires.AddRange(new[] { t3_A, t2_C });
+			t3_B.Requires.AddRange(new[] { t2_C });
+			t3_A.Requires.AddRange(new[] { t2_A, t1_B, t2_B });
+			t2_C.Requires.AddRange(new[] { t1_C });
+			t2_B.Requires.AddRange(new[] { t1_C });
+			t2_A.Requires.AddRange(new[] { t0_A, t1_A });
+			t1_C.Requires.AddRange(new[] { t0_B });
+			t1_B.Requires.AddRange(new[] { t0_B });
+			t1_A.Requires.AddRange(new[] { t0_B });
 
-			List<Activity> roots = new List<Activity>() { rootA, rootB };
-			List<Activity> sinks = new List<Activity>() { rootAB_final, rootB_final };
+			List<Activity> allActivities = new List<Activity>() { t0_A, t0_B, t1_A, t1_B, t1_C, t2_A, t2_B, t2_C, t3_A, t3_B, t4_A };
+			List<Activity> roots = allActivities.Where((a) => !a.Requires.Any()).ToList();
+			List<Activity> sinks = new List<Activity>() { t4_A, t3_B };
 
 			Console.WriteLine("Visit_NextMostExpensive");
-			printActivities(GraphTraverser.Visit_NextMostExpensive(roots));
+			printActivities(GraphTraverser.Visit_NextMostExpensive(allActivities));
 
 			Console.ReadKey(true);
 		}
@@ -53,6 +54,7 @@ namespace DAGTaskOptimizer
 		#endregion Methods
 	}
 
+	[System.Diagnostics.DebuggerDisplay("{Name} ({TimeToExecute})")]
 	public class Activity
 	{
 		#region Constructors
@@ -71,26 +73,32 @@ namespace DAGTaskOptimizer
 
 		public int TimeToExecute { get; }
 
-		public List<Activity> Subsequent { get; } = new List<Activity>();
+		public List<Activity> Requires { get; } = new List<Activity>();
 
 		#endregion Properties
+
+		#region Methods
+
+		public override string ToString() => $"{Name} ({TimeToExecute})";
+
+		#endregion Methods
 	}
 
 	public class GraphTraverser
 	{
 		#region Methods
 
-		public static List<Activity> Visit_NextMostExpensive(List<Activity> roots)
+		public static List<Activity> Visit_NextMostExpensive(List<Activity> allActivities)
 		{
-			List<Activity> availableNodes = new List<Activity>(roots);
+			List<Activity> notYetActivities = new List<Activity>(allActivities);
 			List<Activity> visitOrder = new List<Activity>();
 
-			while (availableNodes.Any())
+			while (notYetActivities.Any())
 			{
-				Activity nextActivity = availableNodes.OrderByDescending((a) => a.TimeToExecute).First();
-				availableNodes.Remove(nextActivity);
-				availableNodes.AddRange(nextActivity.Subsequent);
+				List<Activity> availableActivities = notYetActivities.Where((a) => a.Requires.All((ar) => visitOrder.Contains(ar))).ToList();
+				Activity nextActivity = availableActivities.OrderByDescending((a) => a.TimeToExecute).First();
 				visitOrder.Add(nextActivity);
+				notYetActivities.Remove(nextActivity);
 			}
 
 			return visitOrder;
