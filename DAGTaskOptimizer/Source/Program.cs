@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DAGTaskOptimizer
 {
@@ -10,6 +13,7 @@ namespace DAGTaskOptimizer
 
 		public static void Main(string[] args)
 		{
+			// Critical path is 145, linear path is 215
 			Activity t0_A = new Activity("t0_A", 5);
 			Activity t0_B = new Activity("t0_B", 100);
 
@@ -40,8 +44,13 @@ namespace DAGTaskOptimizer
 			List<Activity> roots = allActivities.Where((a) => !a.Requires.Any()).ToList();
 			List<Activity> sinks = new List<Activity>() { t4_A, t3_B };
 
-			Console.WriteLine("Visit_NextMostExpensive");
-			printActivities(GraphTraverser.Visit_NextMostExpensive(allActivities));
+			//Console.WriteLine("NaiveVisitor_NextMostExpensive 1 core");
+			//Console.WriteLine(ActivityExecuter.SimulateMultiCoreVisiting(1, new NaiveVisitor_NextMostExpensive(allActivities)));
+			//Console.WriteLine(ActivityExecuter.SimulateMultiCoreVisiting(1, new NaiveVisitor_NextMostExpensive(allActivities)));
+			Console.WriteLine();
+			Console.WriteLine("NaiveVisitor_NextMostExpensive 2 core");
+			Console.WriteLine(ActivityExecuter.SimulateMultiCoreVisiting(2, new NaiveVisitor_NextMostExpensive(allActivities)));
+			Console.WriteLine(ActivityExecuter.SimulateMultiCoreVisiting(2, new NaiveVisitor_NextMostExpensive(allActivities)));
 
 			Console.ReadKey(true);
 		}
@@ -84,24 +93,83 @@ namespace DAGTaskOptimizer
 		#endregion Methods
 	}
 
-	public class GraphTraverser
+	public class ActivityExecuter
 	{
 		#region Methods
 
-		public static List<Activity> Visit_NextMostExpensive(List<Activity> allActivities)
+		public static int SimulateMultiCoreVisiting(int coreCount, IActivityVisitor activityVisitor)
 		{
-			List<Activity> notYetActivities = new List<Activity>(allActivities);
-			List<Activity> visitOrder = new List<Activity>();
+			ManualResetEvent manualResetEvent = new ManualResetEvent(false);
+			Task<Activity[]>[] visitorTasks = Enumerable.Range(0, coreCount)
+				.Select((i) => Task.Run(() =>
+				{
+					manualResetEvent.WaitOne();
+					List<Activity> visitedActivities = new List<Activity>();
+					Activity activity;
+					while ((activity = activityVisitor.GetNextActivityToVisit()) != null)
+					{
+						visitedActivities.Add(activity);
+						Thread.Sleep(activity.TimeToExecute * 10);
+					}
+					return visitedActivities.ToArray();
+				}))
+				.ToArray();
 
-			while (notYetActivities.Any())
+			Stopwatch stopwatch = Stopwatch.StartNew();
+			manualResetEvent.Set();
+			Task.WaitAll(visitorTasks);
+			stopwatch.Stop();
+			return (int)(stopwatch.Elapsed.TotalMilliseconds / 10.0 - 15);
+		}
+
+		#endregion Methods
+	}
+
+	public interface IActivityVisitor
+	{
+		#region Methods
+
+		Activity GetNextActivityToVisit();
+
+		#endregion Methods
+	}
+
+	public class NaiveVisitor_NextMostExpensive : IActivityVisitor
+	{
+		#region Fields
+
+		private readonly List<Activity> allActivities = new List<Activity>();
+		private readonly List<Activity> notYetVisitedActivities = new List<Activity>();
+		private readonly HashSet<Activity> vistedActivities = new HashSet<Activity>();
+
+		#endregion Fields
+
+		#region Constructors
+
+		public NaiveVisitor_NextMostExpensive(IEnumerable<Activity> allActivities)
+		{
+			this.allActivities = allActivities.ToList();
+			this.notYetVisitedActivities = allActivities.ToList();
+		}
+
+		#endregion Constructors
+
+		#region Methods
+
+		public Activity GetNextActivityToVisit()
+		{
+			lock (this.notYetVisitedActivities)
 			{
-				List<Activity> availableActivities = notYetActivities.Where((a) => a.Requires.All((ar) => visitOrder.Contains(ar))).ToList();
-				Activity nextActivity = availableActivities.OrderByDescending((a) => a.TimeToExecute).First();
-				visitOrder.Add(nextActivity);
-				notYetActivities.Remove(nextActivity);
-			}
+				if (!this.notYetVisitedActivities.Any()) { return null; }
 
-			return visitOrder;
+				List<Activity> availableActivities = this.notYetVisitedActivities
+					.Where((a) => a.Requires.All((ar) => this.vistedActivities.Contains(ar)))
+					.ToList();
+				Activity nextActivity = availableActivities.OrderByDescending((a) => a.TimeToExecute).First();
+				this.notYetVisitedActivities.Remove(nextActivity);
+				this.vistedActivities.Add(nextActivity);
+				return nextActivity;
+			}
 		}
 
 		#endregion Methods
