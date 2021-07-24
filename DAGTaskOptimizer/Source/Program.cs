@@ -42,7 +42,8 @@ namespace DAGTaskOptimizer
 
 			List<Activity> allActivities = new List<Activity>() { t0_A, t0_B, t1_A, t1_B, t1_C, t2_A, t2_B, t2_C, t3_A, t3_B, t4_A };
 			List<Activity> roots = allActivities.Where((a) => !a.Requires.Any()).ToList();
-			List<Activity> sinks = new List<Activity>() { t4_A, t3_B };
+			List<Activity> sinks = allActivities.Where((a) => !allActivities.Any((b) => b.Requires.Contains(a))).ToList();
+			allActivities.SelectMany((a) => a.Requires.Select((b) => Tuple.Create(a.Name, b.Name))).ToList().ForEach((tuple) => Console.WriteLine($"{tuple.Item2} -> {tuple.Item1}"));
 
 			//Console.WriteLine("NaiveVisitor_NextMostExpensive 1 core");
 			//Console.WriteLine(ActivityExecuter.SimulateMultiCoreVisiting(1, new NaiveVisitor_NextMostExpensive(allActivities)));
